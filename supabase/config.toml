@@ -1,1 +1,4 @@
 project_id = "egyrwxjgxneltgwcengb"
+
+[functions.openai-realtime-token]
+verify_jwt = false

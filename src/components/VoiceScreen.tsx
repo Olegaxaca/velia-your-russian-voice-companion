@@ -1,22 +1,34 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MicrophoneButton from "./MicrophoneButton";
+import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 
 const VoiceScreen = () => {
-  const [isListening, setIsListening] = useState(false);
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
-    { text: "Привет! Я Велия, ваш голосовой помощник. Чем могу помочь?", isUser: false },
-  ]);
+  const { 
+    messages, 
+    isConnected, 
+    isConnecting, 
+    isSpeaking, 
+    isListening,
+    connect, 
+    disconnect 
+  } = useRealtimeChat();
 
-  const handleToggle = (listening: boolean) => {
-    setIsListening(listening);
-    if (!listening) {
-      // Simulate user message and response
-      setMessages((prev) => [
-        ...prev,
-        { text: "Тестовое сообщение", isUser: true },
-        { text: "Это тестовая версия. Голосовое распознавание будет добавлено позже!", isUser: false },
-      ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleMicClick = () => {
+    if (isConnected) {
+      disconnect();
+    } else {
+      connect();
     }
   };
 
@@ -29,7 +41,9 @@ const VoiceScreen = () => {
         className="text-center"
       >
         <h1 className="text-3xl font-bold text-gradient mb-2">Велия</h1>
-        <p className="text-muted-foreground text-sm">Ваш голосовой помощник</p>
+        <p className="text-muted-foreground text-sm">
+          {isConnected ? "Голосовой режим активен" : "Ваш голосовой помощник"}
+        </p>
       </motion.div>
 
       {/* Messages area */}
@@ -56,6 +70,7 @@ const VoiceScreen = () => {
             </motion.div>
           ))}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Microphone button */}
@@ -65,7 +80,13 @@ const VoiceScreen = () => {
         transition={{ delay: 0.2 }}
         className="mb-24"
       >
-        <MicrophoneButton onToggle={handleToggle} />
+        <MicrophoneButton 
+          isListening={isListening}
+          isSpeaking={isSpeaking}
+          isConnecting={isConnecting}
+          isConnected={isConnected}
+          onClick={handleMicClick}
+        />
       </motion.div>
     </div>
   );
