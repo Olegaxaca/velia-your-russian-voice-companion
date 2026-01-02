@@ -12,6 +12,7 @@ interface UseRealtimeChatReturn {
   isConnecting: boolean;
   isSpeaking: boolean;
   isListening: boolean;
+  analyserNode: AnalyserNode | null;
   connect: () => Promise<void>;
   disconnect: () => void;
 }
@@ -24,6 +25,7 @@ export function useRealtimeChat(): UseRealtimeChatReturn {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   
   const chatRef = useRef<RealtimeChat | null>(null);
   const currentTranscriptRef = useRef<string>("");
@@ -107,6 +109,10 @@ export function useRealtimeChat(): UseRealtimeChatReturn {
       chatRef.current = new RealtimeChat(handleMessage);
       await chatRef.current.init();
       setIsConnected(true);
+      // Get analyser node after connection is established
+      setTimeout(() => {
+        setAnalyserNode(chatRef.current?.getAnalyserNode() || null);
+      }, 500);
     } catch (error) {
       console.error("Failed to connect:", error);
       setMessages(prev => [
@@ -124,6 +130,7 @@ export function useRealtimeChat(): UseRealtimeChatReturn {
     setIsConnected(false);
     setIsSpeaking(false);
     setIsListening(false);
+    setAnalyserNode(null);
     setMessages(prev => [
       ...prev,
       { text: "Соединение завершено. Нажмите на микрофон, чтобы начать снова.", isUser: false }
@@ -142,6 +149,7 @@ export function useRealtimeChat(): UseRealtimeChatReturn {
     isConnecting,
     isSpeaking,
     isListening,
+    analyserNode,
     connect,
     disconnect,
   };

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MicrophoneButton from "./MicrophoneButton";
+import AudioVisualizer from "./AudioVisualizer";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 
 const VoiceScreen = () => {
@@ -10,6 +11,7 @@ const VoiceScreen = () => {
     isConnecting, 
     isSpeaking, 
     isListening,
+    analyserNode,
     connect, 
     disconnect 
   } = useRealtimeChat();
@@ -72,6 +74,16 @@ const VoiceScreen = () => {
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Audio Visualizer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="w-full max-w-xs mb-4"
+      >
+        <AudioVisualizer isActive={isSpeaking} analyserNode={analyserNode} />
+      </motion.div>
 
       {/* Microphone button */}
       <motion.div

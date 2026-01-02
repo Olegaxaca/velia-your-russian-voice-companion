@@ -12,6 +12,8 @@ export class RealtimeChat {
   private dc: RTCDataChannel | null = null;
   private audioEl: HTMLAudioElement;
   private localStream: MediaStream | null = null;
+  private audioContext: AudioContext | null = null;
+  private analyserNode: AnalyserNode | null = null;
 
   constructor(private onMessage: (message: RealtimeMessage) => void) {
     this.audioEl = document.createElement("audio");
@@ -41,10 +43,22 @@ export class RealtimeChat {
       // Create peer connection
       this.pc = new RTCPeerConnection();
 
-      // Set up remote audio
+      // Set up remote audio with analyser for visualization
       this.pc.ontrack = (e) => {
         console.log("Received remote audio track");
         this.audioEl.srcObject = e.streams[0];
+        
+        // Create audio context and analyser for visualization
+        this.audioContext = new AudioContext();
+        const source = this.audioContext.createMediaStreamSource(e.streams[0]);
+        this.analyserNode = this.audioContext.createAnalyser();
+        this.analyserNode.fftSize = 256;
+        this.analyserNode.smoothingTimeConstant = 0.8;
+        source.connect(this.analyserNode);
+        
+        // Also connect to destination to hear the audio
+        // Note: Audio plays through audioEl, analyser just observes
+        console.log("Audio analyser connected for visualization");
       };
 
       // Add local audio track
@@ -157,11 +171,21 @@ export class RealtimeChat {
       this.pc = null;
     }
     
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+      this.analyserNode = null;
+    }
+    
     this.audioEl.srcObject = null;
     console.log("Disconnected");
   }
 
   isConnected(): boolean {
     return this.dc?.readyState === 'open';
+  }
+
+  getAnalyserNode(): AnalyserNode | null {
+    return this.analyserNode;
   }
 }
