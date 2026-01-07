@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MicrophoneButton from "./MicrophoneButton";
+import OrbButton from "./OrbButton";
 import AudioVisualizer from "./AudioVisualizer";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
+import { useActivationStyle } from "@/hooks/useActivationStyle";
 
 const VoiceScreen = () => {
   const { 
@@ -16,6 +18,7 @@ const VoiceScreen = () => {
     disconnect 
   } = useRealtimeChat();
 
+  const { style: activationStyle } = useActivationStyle();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -85,20 +88,30 @@ const VoiceScreen = () => {
         <AudioVisualizer isActive={isSpeaking} analyserNode={analyserNode} />
       </motion.div>
 
-      {/* Microphone button */}
+      {/* Activation button */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
         className="mb-24"
       >
-        <MicrophoneButton 
-          isListening={isListening}
-          isSpeaking={isSpeaking}
-          isConnecting={isConnecting}
-          isConnected={isConnected}
-          onClick={handleMicClick}
-        />
+        {activationStyle === "orb" ? (
+          <OrbButton 
+            isListening={isListening}
+            isSpeaking={isSpeaking}
+            isConnecting={isConnecting}
+            isConnected={isConnected}
+            onClick={handleMicClick}
+          />
+        ) : (
+          <MicrophoneButton 
+            isListening={isListening}
+            isSpeaking={isSpeaking}
+            isConnecting={isConnecting}
+            isConnected={isConnected}
+            onClick={handleMicClick}
+          />
+        )}
       </motion.div>
     </div>
   );

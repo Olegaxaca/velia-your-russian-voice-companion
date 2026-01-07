@@ -7,9 +7,12 @@ import {
   Shield,
   Info,
   ChevronRight,
+  Mic,
+  Circle,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
+import { useActivationStyle, ActivationStyle } from "@/hooks/useActivationStyle";
 
 interface SettingItemProps {
   icon: React.ReactNode;
@@ -60,6 +63,7 @@ const SettingsScreen = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [notifications, setNotifications] = useState(true);
+  const { style: activationStyle, setStyle: setActivationStyle } = useActivationStyle();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -140,6 +144,74 @@ const SettingsScreen = () => {
             Голос
           </motion.h2>
           <motion.div variants={itemVariants} className="space-y-3">
+            {/* Activation style selector */}
+            <div className="glass rounded-xl p-4">
+              <p className="font-medium text-foreground mb-3">Стиль активации</p>
+              <div className="flex gap-3">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActivationStyle("microphone")}
+                  className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl transition-all ${
+                    activationStyle === "microphone" 
+                      ? "bg-primary/20 border-2 border-primary" 
+                      : "bg-secondary/30 border-2 border-transparent"
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    activationStyle === "microphone" ? "bg-primary" : "bg-secondary"
+                  }`}>
+                    <Mic className={`w-6 h-6 ${
+                      activationStyle === "microphone" ? "text-primary-foreground" : "text-muted-foreground"
+                    }`} />
+                  </div>
+                  <span className={`text-sm font-medium ${
+                    activationStyle === "microphone" ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    Микрофон
+                  </span>
+                </motion.button>
+                
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActivationStyle("orb")}
+                  className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl transition-all ${
+                    activationStyle === "orb" 
+                      ? "bg-primary/20 border-2 border-primary" 
+                      : "bg-secondary/30 border-2 border-transparent"
+                  }`}
+                >
+                  <div 
+                    className={`w-12 h-12 rounded-[35%] flex items-center justify-center ${
+                      activationStyle === "orb" ? "" : ""
+                    }`}
+                    style={{
+                      background: activationStyle === "orb"
+                        ? "linear-gradient(180deg, hsl(200 85% 50% / 0.8) 0%, hsl(280 70% 50% / 0.9) 100%)"
+                        : "linear-gradient(180deg, hsl(220 30% 40% / 0.5) 0%, hsl(260 30% 35% / 0.6) 100%)",
+                      boxShadow: activationStyle === "orb" 
+                        ? "0 0 15px hsl(200 80% 60% / 0.4)" 
+                        : "none"
+                    }}
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
+                      <path
+                        d="M 4 12 Q 8 8, 12 12 T 20 12"
+                        fill="none"
+                        stroke={activationStyle === "orb" ? "hsl(180 85% 75%)" : "hsl(0 0% 60%)"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                  <span className={`text-sm font-medium ${
+                    activationStyle === "orb" ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    Сфера
+                  </span>
+                </motion.button>
+              </div>
+            </div>
+            
             <SettingItem
               icon={<Globe className="w-5 h-5" />}
               title="Язык"
