@@ -2,11 +2,12 @@ import { useState } from "react";
 import WaveBackground from "@/components/WaveBackground";
 import BottomNavigation from "@/components/BottomNavigation";
 import VoiceScreen from "@/components/VoiceScreen";
+import TextChatScreen from "@/components/TextChatScreen";
 import CharacterScreen from "@/components/CharacterScreen";
 import SettingsScreen from "@/components/SettingsScreen";
 import { AnimatePresence, motion } from "framer-motion";
 
-type Tab = "voice" | "character" | "settings";
+type Tab = "voice" | "text" | "character" | "settings";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("voice");
@@ -15,6 +16,8 @@ const Index = () => {
     switch (activeTab) {
       case "voice":
         return <VoiceScreen />;
+      case "text":
+        return <TextChatScreen />;
       case "character":
         return <CharacterScreen />;
       case "settings":
