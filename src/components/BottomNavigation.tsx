@@ -1,7 +1,7 @@
-import { Mic, User, Settings } from "lucide-react";
+import { Mic, MessageSquare, User, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 
-type Tab = "voice" | "character" | "settings";
+type Tab = "voice" | "text" | "character" | "settings";
 
 interface BottomNavigationProps {
   activeTab: Tab;
@@ -11,6 +11,7 @@ interface BottomNavigationProps {
 const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
   const tabs = [
     { id: "voice" as Tab, icon: Mic, label: "Голос" },
+    { id: "text" as Tab, icon: MessageSquare, label: "Текст" },
     { id: "character" as Tab, icon: User, label: "Велия" },
     { id: "settings" as Tab, icon: Settings, label: "Настройки" },
   ];
