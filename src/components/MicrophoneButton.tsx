@@ -19,7 +19,8 @@ const MicrophoneButton = ({
   const isActive = isListening || isSpeaking;
 
   return (
-    <div className="relative flex items-center justify-center">
+    // Добавляем pb-28, чтобы контент не перекрывался нижней панелью
+    <div className="relative flex flex-col items-center justify-center pb-28">
       {/* Ripple effects when active */}
       <AnimatePresence>
         {isActive && (
@@ -92,10 +93,7 @@ const MicrophoneButton = ({
           ease: "easeInOut",
         }}
       >
-        <motion.div
-          initial={false}
-          animate={{ rotate: 0 }}
-        >
+        <motion.div initial={false} animate={{ rotate: 0 }}>
           {isConnecting ? (
             <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
           ) : isConnected ? (
@@ -108,7 +106,7 @@ const MicrophoneButton = ({
 
       {/* Status text */}
       <motion.p
-        className="absolute -bottom-12 text-sm font-medium text-muted-foreground text-center whitespace-nowrap"
+        className="absolute bottom-16 text-sm font-medium text-muted-foreground text-center whitespace-nowrap"
         animate={{ opacity: isActive ? 1 : 0.7 }}
       >
         {isConnecting 
