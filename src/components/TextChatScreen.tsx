@@ -6,6 +6,7 @@ import { processCommand, commandsList } from "@/utils/veliaCommands";
 interface ChatMessage {
   text: string;
   isUser: boolean;
+  isTyping?: boolean;
 }
 
 const TextChatScreen = () => {
@@ -14,6 +15,7 @@ const TextChatScreen = () => {
   ]);
   const [input, setInput] = useState("");
   const [showCommands, setShowCommands] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,15 +25,22 @@ const TextChatScreen = () => {
 
   const handleSend = () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isTyping) return;
 
     const userMsg: ChatMessage = { text: trimmed, isUser: true };
-    const result = processCommand(trimmed);
-    const botMsg: ChatMessage = { text: result.text, isUser: false };
-
-    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    inputRef.current?.focus();
+    setIsTyping(true);
+
+    // Simulate typing delay
+    const delay = 600 + Math.random() * 800;
+    setTimeout(() => {
+      const result = processCommand(trimmed);
+      const botMsg: ChatMessage = { text: result.text, isUser: false };
+      setMessages((prev) => [...prev, botMsg]);
+      setIsTyping(false);
+      inputRef.current?.focus();
+    }, delay);
   };
 
   const handleCommandClick = (cmd: string) => {
@@ -48,7 +57,6 @@ const TextChatScreen = () => {
   };
 
   const renderMessageText = (text: string) => {
-    // Simple markdown-like rendering for bold and spoilers
     let rendered = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler bg-muted-foreground/30 hover:bg-transparent transition-colors rounded px-1 cursor-pointer select-all">$1</span>')
@@ -94,6 +102,37 @@ const TextChatScreen = () => {
               </motion.div>
             ))}
           </AnimatePresence>
+
+          {/* Typing indicator */}
+          <AnimatePresence>
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="flex justify-start"
+              >
+                <div className="glass rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+                  <motion.span
+                    className="w-2 h-2 rounded-full bg-primary"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.span
+                    className="w-2 h-2 rounded-full bg-primary"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                  />
+                  <motion.span
+                    className="w-2 h-2 rounded-full bg-primary"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -116,7 +155,7 @@ const TextChatScreen = () => {
                     onClick={() => handleCommandClick(c.cmd)}
                     className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors text-left"
                   >
-                    <span className="text-base">{c.icon}</span>
+                    <span className="text-base flex-shrink-0">{c.icon}</span>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground truncate">{c.cmd}</p>
                       <p className="text-[10px] text-muted-foreground truncate">{c.desc}</p>
@@ -144,11 +183,11 @@ const TextChatScreen = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Напиши команду..."
-            className="flex-1 h-10 rounded-xl bg-muted/50 border border-border/30 px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="flex-1 min-w-0 h-10 rounded-xl bg-muted/50 border border-border/30 px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isTyping}
             className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 transition-opacity"
           >
             <Send className="w-5 h-5" />

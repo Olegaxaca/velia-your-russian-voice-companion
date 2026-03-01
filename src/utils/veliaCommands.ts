@@ -3,6 +3,7 @@
 let guessNumberTarget: number | null = null;
 let guessNumberMax: number = 100;
 let guessColorTarget: string | null = null;
+let currentRiddle: { q: string; a: string } | null = null;
 
 const colors = ["красный", "синий", "зелёный", "жёлтый", "оранжевый", "фиолетовый", "розовый", "белый", "чёрный", "голубой"];
 
@@ -17,12 +18,12 @@ const jokes = [
 ];
 
 const riddles = [
-  { q: "Что можно увидеть с закрытыми глазами?", a: "Сон 💤" },
-  { q: "Что идёт, не двигаясь с места?", a: "Время ⏰" },
-  { q: "У чего нет длины, ширины, глубины, а можно измерить?", a: "Температура 🌡️" },
-  { q: "Что можно приготовить, но нельзя съесть?", a: "Уроки 📚" },
-  { q: "Какой рукой лучше размешивать чай?", a: "Лучше ложкой! 🥄" },
-  { q: "Что становится больше, если его поставить вверх ногами?", a: "Число 6 → 9 🔢" },
+  { q: "Что можно увидеть с закрытыми глазами?", a: "сон" },
+  { q: "Что идёт, не двигаясь с места?", a: "время" },
+  { q: "У чего нет длины, ширины, глубины, а можно измерить?", a: "температура" },
+  { q: "Что можно приготовить, но нельзя съесть?", a: "уроки" },
+  { q: "Какой рукой лучше размешивать чай?", a: "ложкой" },
+  { q: "Что становится больше, если его поставить вверх ногами?", a: "6" },
 ];
 
 const randomPhrases = [
@@ -45,6 +46,13 @@ const randomActions = [
   "💃 *танцует*",
 ];
 
+const greetings = [
+  "Привет! 💜 Рада тебя видеть!",
+  "Привет-привет! ✨ Как дела?",
+  "Здравствуй! 😊 Чем могу помочь?",
+  "Приветик! 💫 Напиши `помощь`, если хочешь узнать что я умею!",
+];
+
 export interface CommandResult {
   text: string;
   isGame?: boolean;
@@ -53,10 +61,15 @@ export interface CommandResult {
 export function processCommand(input: string): CommandResult {
   const text = input.trim().toLowerCase();
 
-  // Roll a die
+  // Greetings
+  if (["привет", "здравствуй", "здравствуйте", "хай", "хей", "hello", "hi", "приветик", "здарова", "йо"].includes(text)) {
+    return { text: greetings[Math.floor(Math.random() * greetings.length)] };
+  }
+
+  // Roll a die (1-6)
   if (text === "бросить кубик" || text === "кубик" || text === "кость") {
-    const num = Math.floor(Math.random() * 1000000) + 1;
-    return { text: `🎲 Кубик показал: **${num.toLocaleString()}** (от 1 до 1 000 000)` };
+    const num = Math.floor(Math.random() * 6) + 1;
+    return { text: `🎲 Кубик показал: **${num}**` };
   }
 
   // Coin flip
@@ -70,10 +83,23 @@ export function processCommand(input: string): CommandResult {
     return { text: jokes[Math.floor(Math.random() * jokes.length)] };
   }
 
-  // Riddle
+  // Riddle - check answer if active
+  if (currentRiddle !== null) {
+    const answer = currentRiddle.a;
+    const isCorrect = text.includes(answer);
+    currentRiddle = null;
+    if (isCorrect) {
+      return { text: `🎉 Правильно! Ответ — **${answer}**! Молодец! ✨` };
+    } else {
+      return { text: `❌ Неправильно! Правильный ответ — **${answer}**. Попробуй другую загадку! 🧩` };
+    }
+  }
+
+  // Riddle - start new
   if (text === "загадка" || text === "загадай загадку") {
     const riddle = riddles[Math.floor(Math.random() * riddles.length)];
-    return { text: `🧩 Загадка: ${riddle.q}\n\n||Ответ: ${riddle.a}||` };
+    currentRiddle = riddle;
+    return { text: `🧩 Загадка: **${riddle.q}**\n\nНапиши свой ответ!`, isGame: true };
   }
 
   // Guess the number - start
@@ -135,7 +161,7 @@ export function processCommand(input: string): CommandResult {
 
   // Help
   if (text === "помощь" || text === "help" || text === "команды") {
-    return { text: `📋 **Команды Велии:**\n\n🎲 \`кубик\` — число от 1 до 1 000 000\n🪙 \`монетка\` — орёл или решка\n😂 \`анекдот\` — рассказать шутку\n🧩 \`загадка\` — загадать загадку\n🔢 \`угадай число\` — игра в угадывание\n🎨 \`угадай цвет\` — угадай загаданный цвет\n🎯 \`выбери A / B / C\` — случайный выбор\n🔁 \`повтори [текст]\` — повторю за тобой\n💬 \`скажи что-нибудь\` — случайная фраза\n🎭 \`случайное действие\` — сделаю что-то\n❓ \`кто ты\` / \`что ты умеешь\`` };
+    return { text: `📋 **Команды Велии:**\n\n🎲 \`кубик\` — бросить кубик (1-6)\n🪙 \`монетка\` — орёл или решка\n😂 \`анекдот\` — рассказать шутку\n🧩 \`загадка\` — загадать загадку\n🔢 \`угадай число\` — игра в угадывание\n🎨 \`угадай цвет\` — угадай загаданный цвет\n🎯 \`выбери A / B / C\` — случайный выбор\n🔁 \`повтори [текст]\` — повторю за тобой\n💬 \`скажи что-нибудь\` — случайная фраза\n🎭 \`случайное действие\` — сделаю что-то\n❓ \`кто ты\` / \`что ты умеешь\`` };
   }
 
   // Select from options
@@ -169,7 +195,7 @@ export function processCommand(input: string): CommandResult {
 }
 
 export const commandsList = [
-  { cmd: "кубик", desc: "Число от 1 до 1 000 000", icon: "🎲" },
+  { cmd: "кубик", desc: "Бросить кубик (1-6)", icon: "🎲" },
   { cmd: "монетка", desc: "Орёл или решка", icon: "🪙" },
   { cmd: "анекдот", desc: "Рассказать шутку", icon: "😂" },
   { cmd: "загадка", desc: "Загадать загадку", icon: "🧩" },
