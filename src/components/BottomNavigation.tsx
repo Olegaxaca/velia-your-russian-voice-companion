@@ -19,7 +19,8 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="mx-4 mb-4">
-        <div className="glass rounded-2xl p-2 flex items-center justify-around">
+        {/* Убрали justify-around и добавили gap */}
+        <div className="glass rounded-2xl p-2 flex items-center gap-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -28,7 +29,8 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
               <motion.button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`relative flex flex-col items-center gap-1 px-6 py-3 rounded-xl transition-colors ${
+                // Добавили flex-1 и убрали px-6
+                className={`relative flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-colors ${
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}
                 whileTap={{ scale: 0.95 }}
@@ -41,8 +43,14 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
                     transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   />
                 )}
-                <Icon className={`w-6 h-6 relative z-10 ${isActive ? "text-primary" : ""}`} />
-                <span className="text-xs font-medium relative z-10">{tab.label}</span>
+
+                {/* Немного уменьшили иконку */}
+                <Icon className={`w-5 h-5 relative z-10 ${isActive ? "text-primary" : ""}`} />
+
+                {/* Чуть компактнее текст */}
+                <span className="text-[11px] font-medium relative z-10">
+                  {tab.label}
+                </span>
               </motion.button>
             );
           })}
