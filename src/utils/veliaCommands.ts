@@ -224,6 +224,60 @@ const adviceResponses = [
   "Делай то, что любишь, и люби то, что делаешь! 😊",
 ];
 
+// App deep links and web fallbacks
+interface AppInfo {
+  name: string;
+  deepLink: string;
+  webUrl: string;
+  icon: string;
+  aliases: string[];
+}
+
+const apps: AppInfo[] = [
+  { name: "Telegram", deepLink: "tg://", webUrl: "https://web.telegram.org", icon: "📨", aliases: ["телеграм", "тг", "telegram", "тележка"] },
+  { name: "YouTube", deepLink: "youtube://", webUrl: "https://www.youtube.com", icon: "📺", aliases: ["ютуб", "youtube", "ютубчик", "ютьюб"] },
+  { name: "VK", deepLink: "vk://", webUrl: "https://vk.com", icon: "💙", aliases: ["вк", "вконтакте", "vk", "контакт"] },
+  { name: "Steam", deepLink: "steam://", webUrl: "https://store.steampowered.com", icon: "🎮", aliases: ["стим", "steam"] },
+  { name: "WhatsApp", deepLink: "whatsapp://", webUrl: "https://web.whatsapp.com", icon: "💬", aliases: ["вотсап", "whatsapp", "ватсап", "вацап"] },
+  { name: "Instagram", deepLink: "instagram://", webUrl: "https://www.instagram.com", icon: "📸", aliases: ["инстаграм", "instagram", "инста"] },
+  { name: "TikTok", deepLink: "snssdk1233://", webUrl: "https://www.tiktok.com", icon: "🎵", aliases: ["тикток", "tiktok", "тик-ток"] },
+  { name: "Twitter/X", deepLink: "twitter://", webUrl: "https://x.com", icon: "🐦", aliases: ["твиттер", "twitter", "x", "икс"] },
+  { name: "Spotify", deepLink: "spotify://", webUrl: "https://open.spotify.com", icon: "🎧", aliases: ["спотифай", "spotify"] },
+  { name: "Discord", deepLink: "discord://", webUrl: "https://discord.com", icon: "🎙️", aliases: ["дискорд", "discord", "диск"] },
+  { name: "Twitch", deepLink: "twitch://", webUrl: "https://www.twitch.tv", icon: "🟣", aliases: ["твич", "twitch"] },
+  { name: "Reddit", deepLink: "reddit://", webUrl: "https://www.reddit.com", icon: "🤖", aliases: ["реддит", "reddit"] },
+  { name: "Pinterest", deepLink: "pinterest://", webUrl: "https://www.pinterest.com", icon: "📌", aliases: ["пинтерест", "pinterest"] },
+  { name: "Snapchat", deepLink: "snapchat://", webUrl: "https://www.snapchat.com", icon: "👻", aliases: ["снапчат", "snapchat"] },
+  { name: "Viber", deepLink: "viber://", webUrl: "https://www.viber.com", icon: "💜", aliases: ["вайбер", "viber"] },
+  { name: "Google Maps", deepLink: "comgooglemaps://", webUrl: "https://maps.google.com", icon: "🗺️", aliases: ["гугл карты", "google maps", "карты"] },
+  { name: "Яндекс Музыка", deepLink: "yandexmusic://", webUrl: "https://music.yandex.ru", icon: "🎶", aliases: ["яндекс музыка", "я.музыка", "yandex music"] },
+];
+
+function findApp(text: string): AppInfo | null {
+  for (const app of apps) {
+    for (const alias of app.aliases) {
+      if (text.includes(alias)) return app;
+    }
+  }
+  return null;
+}
+
+function tryOpenApp(app: AppInfo): string {
+  // Try deep link first, then fall back to web
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = app.deepLink;
+  document.body.appendChild(iframe);
+  
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+    // If we're still here, the app didn't open — open web version
+    window.open(app.webUrl, "_blank");
+  }, 1500);
+  
+  return `${app.icon} Открываю **${app.name}**! Если приложение не установлено, откроется веб-версия 🌐`;
+}
+
 const nlpPatterns: NlpPattern[] = [
   {
     patterns: [
@@ -581,7 +635,7 @@ export function processCommand(input: string): CommandResult {
 
   // Help
   if (text === "помощь" || text === "help" || text === "команды") {
-    return { text: `📋 **Команды Велии:**\n\n🎲 \`кубик\` — бросить кубик (1-6)\n🪙 \`монетка\` — орёл или решка\n😂 \`анекдот\` — рассказать шутку\n🧩 \`загадка\` — загадать загадку\n🔢 \`угадай число\` — игра в угадывание\n🎨 \`угадай цвет\` — угадай загаданный цвет\n🎯 \`выбери A / B / C\` — случайный выбор\n🔁 \`повтори [текст]\` — повторю за тобой\n💬 \`скажи что-нибудь\` — случайная фраза\n🎭 \`случайное действие\` — сделаю что-то\n❓ \`кто ты\` / \`что ты умеешь\`` };
+    return { text: `📋 **Команды Велии:**\n\n🎲 \`кубик\` — бросить кубик (1-6)\n🪙 \`монетка\` — орёл или решка\n😂 \`анекдот\` — рассказать шутку\n🧩 \`загадка\` — загадать загадку\n🔢 \`угадай число\` — игра в угадывание\n🎨 \`угадай цвет\` — угадай загаданный цвет\n🎯 \`выбери A / B / C\` — случайный выбор\n🔁 \`повтори [текст]\` — повторю за тобой\n💬 \`скажи что-нибудь\` — случайная фраза\n🎭 \`случайное действие\` — сделаю что-то\n📱 \`открой [приложение]\` — открыть приложение\n❓ \`кто ты\` / \`что ты умеешь\`` };
   }
 
   // Select from options
@@ -610,6 +664,21 @@ export function processCommand(input: string): CommandResult {
     return { text: randomActions[Math.floor(Math.random() * randomActions.length)] };
   }
 
+  // Open app
+  if (/^(открой|запусти|открыть|запустить|включи|включить)\s+/.test(text)) {
+    const app = findApp(text);
+    if (app) {
+      return { text: tryOpenApp(app) };
+    }
+    return { text: "🤔 Не знаю такого приложения. Попробуй: Telegram, YouTube, VK, Steam, WhatsApp, Instagram, TikTok, Discord, Spotify и другие!" };
+  }
+
+  // Direct app name mention
+  const directApp = findApp(text);
+  if (directApp && /^(телеграм|тг|ютуб|вк|стим|вотсап|инста|тикток|дискорд|спотифай|твич)$/i.test(text)) {
+    return { text: tryOpenApp(directApp) };
+  }
+
   // Default
   return { text: `Хм, я пока не совсем поняла 🤔 Попробуй написать по-другому или напиши \`помощь\` для списка команд!` };
 }
@@ -627,5 +696,6 @@ export const commandsList = [
   { cmd: "случайное действие", desc: "Сделаю что-то", icon: "🎭" },
   { cmd: "кто ты", desc: "Обо мне", icon: "❓" },
   { cmd: "что ты умеешь", desc: "Мои возможности", icon: "✨" },
+  { cmd: "открой telegram", desc: "Открыть приложение", icon: "📱" },
   { cmd: "помощь", desc: "Список команд", icon: "📋" },
 ];
